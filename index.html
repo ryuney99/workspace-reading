@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>독해 학습지 — 워크스페이스</title>
+<style>
+  /* ═══════════════════════════════
+     기본 리셋 & 변수
+  ═══════════════════════════════ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --accent:    #5b5ef4;
+    --accent-lt: #eeeeff;
+    --accent-dk: #3f42d0;
+    --bg:        #f0f0f4;
+    --panel:     #ffffff;
+    --border:    #e5e5e8;
+    --text-1:    #1a1a1a;
+    --text-2:    #555;
+    --text-3:    #999;
+    --text-4:    #bbb;
+    --success:   #2a9a55;
+    --warn-bg:   #fff8ec;
+    --warn-bd:   #ffd97a;
+    --warn-tx:   #7a5a00;
+    --left-w:    200px;
+    --right-w:   22%;
+    --hdr-h:     44px;
+  }
+  body {
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text-1);
+    font-size: 13px;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ═══════════════════════════════
+     글로벌 헤더
+  ═══════════════════════════════ */
+  .g-header {
+    height: var(--hdr-h);
+    background: #1a1a2e;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+    border-bottom: 1px solid #2e2e48;
+  }
+  .g-header-logo {
+    font-size: 13px;
+    font-weight: 800;
+    color: #8b8ef8;
+    letter-spacing: -.3px;
+  }
+  .g-header-sep { width: 1px; height: 16px; background: #3a3a5a; }
+  .g-header-sub { font-size: 13px; color: #ffffff; font-weight: 600; letter-spacing: -.2px; }
+  .g-header-badge {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    color: #5b5ef4;
+    background: rgba(91,94,244,.15);
+    border: 1px solid rgba(91,94,244,.3);
+    border-radius: 4px;
+    padding: 2px 7px;
+  }
+
+  /* ═══════════════════════════════
+     3열 레이아웃
+  ═══════════════════════════════ */
+  .workspace {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── 레프트 ── */
+  .col-left {
+    width: var(--left-w);
+    flex-shrink: 0;
+    background: #13132a;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid #2a2a48;
+  }
+  .col-left-hd {
+    padding: 14px 14px 10px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #444466;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #1f1f3a;
+  }
+  .nav-group { padding: 10px 0 4px; }
+  .nav-group-label {
+    padding: 0 14px 6px;
+    font-size: 10px;
+    color: #3a3a5a;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: #6666aa;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all .15s;
+    user-select: none;
+  }
+  .nav-item:hover { background: rgba(91,94,244,.08); color: #9999cc; }
+  .nav-item.active { background: rgba(91,94,244,.15); color: #9090f8; border-left-color: #5b5ef4; }
+  .nav-item.disabled { opacity: .35; cursor: default; pointer-events: none; }
+  .nav-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  }
+  .nav-dot.done   { background: #5b5ef4; }
+  .nav-dot.empty  { background: #2e2e4a; border: 1px solid #3a3a5a; }
+  .nav-badge {
+    margin-left: auto;
+    font-size: 9px;
+    background: #2a2a48;
+    color: #4a4a7a;
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-weight: 600;
+  }
+
+  /* ── 메인 ── */
+  .col-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .main-inner {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* step 뷰 */
+  .step-view { display: none; flex: 1; overflow: hidden; }
+  .step-view.active { display: flex; flex-direction: column; }
+
+  /* empty case */
+  .empty-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: var(--text-4);
+  }
+  .empty-screen-icon { font-size: 32px; opacity: .4; }
+  .empty-screen-title { font-size: 15px; font-weight: 700; color: var(--text-3); }
+  .empty-screen-sub { font-size: 12px; color: var(--text-4); }
+
+  /* ── 라이트 ── */
+  .col-right {
+    width: var(--right-w);
+    flex-shrink: 0;
+    background: var(--panel);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .right-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .right-tab {
+    flex: 1;
+    padding: 10px 0;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .15s;
+  }
+  .right-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .right-tab-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 16px; height: 16px;
+    padding: 0 4px;
+    margin-left: 5px;
+    background: #e8e8e8; color: #888;
+    border-radius: 8px;
+    font-size: 10px; font-weight: 700; line-height: 1;
+    transition: all .15s;
+  }
+  .right-tab.active .right-tab-badge { background: var(--accent-lt); color: var(--accent); }
+  .right-tab-content { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+  .right-tab-content.active { display: flex; }
+
+  /* 범례 */
+  .rt-legend {
+    display: flex; align-items: center; gap: 12px;
+    padding: 6px 14px 8px;
+    border-bottom: 1px solid #f5f5f5;
+    flex-shrink: 0;
+  }
+  .rt-legend-item { display: flex; align-items: center; gap: 5px; }
+  .rt-legend-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .rt-legend-dot.open { background: #f0a040; }
+  .rt-legend-dot.done { background: #4caf82; }
+  .rt-legend-dot.ref  { background: #8888cc; }
+  .rt-legend-item span { font-size: 10px; color: #bbb; }
+
+  /* 아이템 번호 */
+  .rt-item-num {
+    font-size: 10px; font-weight: 700;
+    color: #ccc; flex-shrink: 0; min-width: 16px;
+  }
+
+  /* 라이트 섹션 공통 */
+  .rt-section { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .rt-section-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid #f0f0f0;
+    flex-shrink: 0;
+  }
+  .rt-section-title { font-size: 12px; font-weight: 700; color: var(--text-1); }
+  .rt-add-btn {
+    display: flex; align-items: center; gap: 3px;
+    padding: 4px 9px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .rt-add-btn:hover { background: var(--accent-dk); }
+
+  .rt-list { flex: 1; overflow-y: auto; }
+  .rt-empty {
+    padding: 24px 14px;
+    text-align: center;
+    color: var(--text-4);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  /* 아이템 */
+  .rt-item {
+    border-bottom: 1px solid #f5f5f5;
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .rt-item:hover { background: #fafafa; }
+  .rt-item.expanded { background: #fafafe; }
+  .rt-item-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 14px;
+  }
+  .rt-status-dot {
+    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 1px;
+  }
+  .rt-status-dot.open  { background: #f0a040; }
+  .rt-status-dot.done  { background: #4caf82; }
+  .rt-status-dot.ref   { background: #8888cc; }
+  .rt-item-title {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-1);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .rt-item-title.done-txt { color: var(--text-4); text-decoration: line-through; }
+  .rt-chevron {
+    font-size: 9px; color: var(--text-4); transition: transform .2s; flex-shrink: 0;
+  }
+  .rt-item.expanded .rt-chevron { transform: rotate(180deg); }
+
+  /* 펼쳐진 내용 */
+  .rt-item-body { display: none; padding: 0 14px 12px; }
+  .rt-item.expanded .rt-item-body { display: block; }
+  .rt-item-body-text {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    background: #f8f8fb;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border: 1px solid #efefef;
+  }
+  .rt-item-actions { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .rt-action-btn {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text-2);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .rt-action-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .rt-action-btn.danger:hover { border-color: #e05050; color: #e05050; }
+  .rt-status-toggle {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .rt-status-toggle.open { background: #fff4e8; color: #c07030; }
+  .rt-status-toggle.done { background: #e8f8ee; color: #2a9a55; }
+
+  /* 모달 폼 */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 12px;
+    width: 360px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    overflow: hidden;
+  }
+  .modal-hd {
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title { font-size: 14px; font-weight: 700; }
+  .modal-close {
+    width: 24px; height: 24px;
+    border: none; background: none;
+    font-size: 16px; color: var(--text-3);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    border-radius: 4px;
+    transition: background .15s;
+  }
+  .modal-close:hover { background: #f0f0f0; }
+  .modal-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .modal-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+    margin-bottom: 5px;
+  }
+  .modal-field input,
+  .modal-field textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-family: inherit;
+    color: var(--text-1);
+    outline: none;
+    transition: border-color .15s;
+    resize: none;
+  }
+  .modal-field input:focus,
+  .modal-field textarea:focus { border-color: var(--accent); }
+  .modal-footer {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .modal-btn {
+    padding: 8px 18px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    transition: all .15s;
+  }
+  .modal-btn.cancel { background: #f0f0f0; color: var(--text-2); }
+  .modal-btn.cancel:hover { background: #e4e4e4; }
+  .modal-btn.save { background: var(--accent); color: #fff; }
+  .modal-btn.save:hover { background: var(--accent-dk); }
+
+  /* ═══════════════════════════════
+     프로토타입 내부 스타일 (메인)
+  ═══════════════════════════════ */
+  .proto-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #f5f5f7;
+  }
+  .proto-top-bar {
+    height: 44px;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    flex-shrink: 0;
+  }
+  .proto-top-title { font-size: 13px; color: #555; }
+  .proto-top-title strong { color: #1a1a1a; font-weight: 600; }
+  .proto-layout { display: flex; flex: 1; overflow: hidden; }
+
+  /* 프로토 좌측 */
+  .proto-left {
+    flex: 1;
+    background: #fff;
+    border-right: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .p-tabs { display: flex; border-bottom: 1px solid #e5e5e5; padding: 0 16px; flex-shrink: 0; }
+  .p-tab { padding: 12px 0 10px; margin-right: 20px; font-size: 13px; color: #ccc; cursor: default; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .p-tab.active { color: #1a1a1a; font-weight: 600; border-bottom-color: #5b5ef4; }
+  .p-level-row { display: flex; align-items: center; gap: 6px; padding: 10px 16px; border-bottom: 1px solid #e8e8e8; flex-shrink: 0; flex-wrap: wrap; }
+  .p-pill { padding: 4px 12px; border-radius: 20px; border: 1px solid #d8d8d8; font-size: 12px; color: #666; cursor: pointer; transition: all .15s; background: #fff; white-space: nowrap; }
+  .p-pill:hover { border-color: #5b5ef4; color: #5b5ef4; }
+  .p-pill.active { background: #5b5ef4; border-color: #5b5ef4; color: #fff; font-weight: 600; }
+  .p-lexile { padding: 4px 16px 5px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; font-size: 11px; color: #bbb; }
+  .p-content { flex: 1; overflow-y: auto; }
+  .p-sec-hd {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 16px; cursor: pointer;
+    background: #f9f9f9; border-top: 1px solid #efefef; border-bottom: 1px solid #efefef;
+  }
+  .p-sec-hd .arr { color: #aaa; font-size: 9px; transition: transform .2s; flex-shrink: 0; }
+  .p-sec-hd.open .arr { transform: rotate(90deg); }
+  .p-sec-chk {
+    width: 15px; height: 15px; border: 1.5px solid #c5c5c5;
+    border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; background: #fff; flex-shrink: 0;
+  }
+  .p-sec-chk.checked { background: #5b5ef4; border-color: #5b5ef4; }
+  .p-sec-chk.checked::after { content: ''; width: 8px; height: 4px; border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .p-sec-label { font-size: 12px; font-weight: 600; color: #333; }
+  .p-item-list { }
+  .p-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px 8px 38px;
+    border-bottom: 1px solid #f2f2f2;
+    cursor: pointer; transition: background .1s;
+  }
+  .p-item:hover { background: #fafafe; }
+  .p-item.selected { background: #f4f4ff; }
+  .p-item-chk {
+    width: 15px; height: 15px; border: 1.5px solid #c5c5c5;
+    border-radius: 3px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; background: #fff;
+  }
+  .p-item-chk.checked { background: #5b5ef4; border-color: #5b5ef4; }
+  .p-item-chk.checked::after { content: ''; width: 8px; height: 4px; border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .p-item-name { font-size: 12px; color: #333; }
+
+  /* 프로토 우측 */
+  .proto-right {
+    width: 280px;
+    background: #fff;
+    border-left: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .pr-inner { flex: 1; overflow-y: auto; padding: 16px; }
+  .pr-opt-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .pr-opt-title { font-size: 13px; font-weight: 700; }
+  .pr-opt-limit { font-size: 11px; color: #888; }
+  .pr-opt-limit span { color: #5b5ef4; font-weight: 600; }
+  .pr-row { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #f0f0f0; }
+  .pr-row-label { font-size: 12px; font-weight: 500; color: #333; margin-bottom: 8px; }
+  .pr-count-inline { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #555; flex-wrap: wrap; }
+  .pr-count-inline span { white-space: nowrap; }
+  .pr-select {
+    appearance: none; -webkit-appearance: none;
+    border: 1.5px solid #d0d0ff; border-radius: 5px;
+    background: #f4f4ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='5' viewBox='0 0 9 5'%3E%3Cpath d='M1 1l3.5 3L8 1' stroke='%235b5ef4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 7px center;
+    color: #5b5ef4; font-weight: 700; font-size: 12px;
+    padding: 4px 22px 4px 8px; cursor: pointer; font-family: inherit;
+  }
+  .pr-select:disabled { opacity: .4; cursor: not-allowed; border-color: #ddd; background-color: #f8f8f8; color: #aaa; }
+  .pr-hint { font-size: 10px; color: #bbb; margin-top: 5px; }
+  .pr-topic-block { margin-bottom: 16px; }
+  .pr-topic-label { font-size: 12px; font-weight: 500; color: #333; margin-bottom: 3px; display: flex; align-items: center; gap: 5px; }
+  .pr-topic-sub { font-size: 10px; color: #bbb; margin-bottom: 10px; }
+  .pr-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pr-chip {
+    padding: 5px 11px; border-radius: 20px; border: 1.5px solid #e0e0e0;
+    font-size: 11px; color: #666; cursor: pointer; background: #fff;
+    transition: all .15s; font-family: inherit; white-space: nowrap; user-select: none;
+  }
+  .pr-chip:hover { border-color: #5b5ef4; color: #5b5ef4; background: #f8f8ff; }
+  .pr-chip.selected { background: #eeeeff; border-color: #5b5ef4; color: #5b5ef4; font-weight: 600; }
+  .pr-chip.disabled { opacity: .4; pointer-events: none; }
+  .pr-random-notice {
+    display: flex; align-items: center; gap: 5px;
+    margin-top: 8px; padding: 7px 10px;
+    background: #f8f8f8; border-radius: 7px; border: 1px solid #ebebeb; font-size: 10px; color: #aaa;
+  }
+  .shortage-banner {
+    display: none; align-items: flex-start; gap: 6px;
+    margin-bottom: 10px; padding: 8px 12px;
+    background: #fff8ec; border: 1px solid #ffd97a; border-radius: 7px;
+  }
+  .shortage-banner.show { display: flex; }
+  .shortage-text { font-size: 11px; color: #7a5a00; line-height: 1.5; }
+  .pr-extra { padding-top: 14px; border-top: 1px solid #f0f0f0; }
+  .pr-extra-title { font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+  .pr-extra-opt { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; cursor: pointer; }
+  .pr-extra-chk { width: 15px; height: 15px; border: 1.5px solid #c5c5c5; border-radius: 3px; display: flex; align-items: center; justify-content: center; background: #fff; flex-shrink: 0; }
+  .pr-extra-chk.checked { background: #5b5ef4; border-color: #5b5ef4; }
+  .pr-extra-chk.checked::after { content: ''; width: 8px; height: 4px; border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(-45deg) translateY(-1px); display: block; }
+  .pr-extra-label { font-size: 12px; color: #444; }
+  .proto-bottom {
+    padding: 12px 16px; border-top: 1px solid #e5e5e5; background: #fff;
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  }
+  .proto-summary { font-size: 12px; color: #555; }
+  .proto-summary strong { font-weight: 700; color: #1a1a1a; }
+  .proto-summary .d { color: #888; font-size: 11px; margin-left: 3px; }
+  .proto-next {
+    padding: 8px 18px; border: none; border-radius: 7px;
+    font-size: 13px; font-weight: 600; font-family: inherit; transition: all .15s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .proto-next.enabled  { background: #5b5ef4; color: #fff; cursor: pointer; }
+  .proto-next.disabled { background: #c5c5c5; color: #fff; cursor: not-allowed; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- 글로벌 헤더 -->
+<div class="g-header">
+  <div class="g-header-logo">잉글리시플랫</div>
+  <div class="g-header-sep"></div>
+  <div class="g-header-sub">독해 학습지 만들기</div>
+  <div class="g-header-badge">INTERNAL</div>
+</div>
+
+<!-- 3열 워크스페이스 -->
+<div class="workspace">
+
+  <!-- ── 레프트: 목차 ── -->
+  <div class="col-left">
+    <div class="col-left-hd">목차</div>
+    <div class="nav-group">
+      <div class="nav-group-label">학습지 생성 플로우</div>
+      <div class="nav-item active" onclick="goStep('step1')" id="nav-step1">
+        <div class="nav-dot done"></div>
+        STEP 1
+        <span class="nav-badge">유형 선택</span>
+      </div>
+      <div class="nav-item" onclick="goStep('step2')" id="nav-step2">
+        <div class="nav-dot empty"></div>
+        STEP 2
+        <span class="nav-badge">구성 예정</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 메인 ── -->
+  <div class="col-main">
+    <div class="main-inner">
+
+      <!-- STEP 1 뷰 -->
+      <div class="step-view active" id="step1">
+        <div class="proto-wrap">
+          <div class="proto-top-bar">
+            <div class="proto-top-title">학습지 만들기 | <strong>STEP 1</strong></div>
+          </div>
+          <div class="proto-layout">
+
+            <!-- 프로토 좌측: 유형 선택 -->
+            <div class="proto-left">
+              <div class="p-tabs">
+                <div class="p-tab" style="color:#ccc">문법 학습지</div>
+                <div class="p-tab" style="color:#ccc">교과서 학습지</div>
+                <div class="p-tab active">독해 학습지</div>
+              </div>
+              <div class="p-level-row">
+                <div class="p-pill" onclick="pSelGrade(this,'중1')">중1</div>
+                <div class="p-pill" onclick="pSelGrade(this,'중2')">중2</div>
+                <div class="p-pill active" onclick="pSelGrade(this,'중3')">중3</div>
+                <div class="p-pill" onclick="pSelGrade(this,'고1')">고1</div>
+                <div class="p-pill" onclick="pSelGrade(this,'고2')">고2</div>
+                <div class="p-pill" onclick="pSelGrade(this,'고3')">고3</div>
+                <div class="p-pill" onclick="pSelGrade(this,'수능')">수능</div>
+              </div>
+              <div class="p-lexile" id="pLexile">렉사일 <strong style="color:#aaa">750–900</strong> · 단어 <strong style="color:#aaa">130–180개</strong></div>
+              <div class="p-content">
+                <div class="p-sec-hd open" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps1')"></div><span class="p-sec-label">대의파악</span></div>
+                <div id="ps1" class="p-item-list">
+                  <div class="p-item" onclick="pToggleItem(this,'주제 파악')"><div class="p-item-chk"></div><span class="p-item-name">주제 파악</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'요지 파악')"><div class="p-item-chk"></div><span class="p-item-name">요지 파악</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'제목 추론')"><div class="p-item-chk"></div><span class="p-item-name">제목 추론</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'목적 파악')"><div class="p-item-chk"></div><span class="p-item-name">목적 파악</span></div>
+                </div>
+                <div class="p-sec-hd" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps2')"></div><span class="p-sec-label">세부사항 파악</span></div>
+                <div id="ps2" class="p-item-list" style="display:none">
+                  <div class="p-item" onclick="pToggleItem(this,'내용 일치·불일치')"><div class="p-item-chk"></div><span class="p-item-name">내용 일치·불일치</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'안내문 이해')"><div class="p-item-chk"></div><span class="p-item-name">안내문 이해</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'도표 이해')"><div class="p-item-chk"></div><span class="p-item-name">도표 이해</span></div>
+                </div>
+                <div class="p-sec-hd" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps3')"></div><span class="p-sec-label">심경·태도·분위기</span></div>
+                <div id="ps3" class="p-item-list" style="display:none">
+                  <div class="p-item" onclick="pToggleItem(this,'심경 변화')"><div class="p-item-chk"></div><span class="p-item-name">심경 변화</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'필자 심경·태도')"><div class="p-item-chk"></div><span class="p-item-name">필자 심경·태도</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'분위기 파악')"><div class="p-item-chk"></div><span class="p-item-name">분위기 파악</span></div>
+                </div>
+                <div class="p-sec-hd" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps4')"></div><span class="p-sec-label">어휘·어법</span></div>
+                <div id="ps4" class="p-item-list" style="display:none">
+                  <div class="p-item" onclick="pToggleItem(this,'어휘 선택')"><div class="p-item-chk"></div><span class="p-item-name">어휘 선택</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'어법 선택')"><div class="p-item-chk"></div><span class="p-item-name">어법 선택</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'빈칸 추론')"><div class="p-item-chk"></div><span class="p-item-name">빈칸 추론</span></div>
+                </div>
+                <div class="p-sec-hd" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps5')"></div><span class="p-sec-label">글의 구조·흐름</span></div>
+                <div id="ps5" class="p-item-list" style="display:none">
+                  <div class="p-item" onclick="pToggleItem(this,'문단 순서')"><div class="p-item-chk"></div><span class="p-item-name">문단 순서</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'문장 삽입')"><div class="p-item-chk"></div><span class="p-item-name">문장 삽입</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'요약 완성')"><div class="p-item-chk"></div><span class="p-item-name">요약 완성</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'장문형')"><div class="p-item-chk"></div><span class="p-item-name">장문형</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 프로토 우측: 옵션 -->
+            <div class="proto-right">
+              <div class="pr-inner">
+                <div class="pr-opt-hd">
+                  <div class="pr-opt-title">추천 옵션 설정</div>
+                  <div class="pr-opt-limit">최대 <span>50</span> 지문</div>
+                </div>
+                <div class="pr-row">
+                  <div class="pr-row-label">지문 개수</div>
+                  <div class="pr-count-inline">
+                    <span>선택한 유형별로 지문</span>
+                    <select class="pr-select" id="prCount" onchange="pRefresh()" disabled>
+                      <option>1</option><option>2</option><option selected>3</option>
+                      <option>4</option><option>5</option><option>6</option>
+                      <option>7</option><option>8</option><option>9</option><option>10</option>
+                    </select>
+                    <span>개씩 출제합니다.</span>
+                  </div>
+                  <div class="pr-hint" id="prHint">유형을 먼저 선택해주세요</div>
+                </div>
+                <div class="pr-topic-block">
+                  <div class="pr-topic-label">주제 필터 <span style="font-size:10px;color:#bbb;font-weight:400">(선택)</span></div>
+                  <div class="pr-topic-sub">선택 안 하면 전체 주제에서 랜덤으로 구성돼요</div>
+                  <div class="shortage-banner" id="pShortage">
+                    <div style="font-size:13px;flex-shrink:0;margin-top:1px">⚠️</div>
+                    <div class="shortage-text">선택한 <strong>유형 + 주제</strong> 조합의 지문이 부족해요. 주제는 자동으로 랜덤 추천됩니다.</div>
+                  </div>
+                  <div class="pr-chips" id="prChips">
+                    <button class="pr-chip disabled" onclick="pToggleTopic(this,'인물·전기')">인물·전기</button>
+                    <button class="pr-chip disabled" onclick="pToggleTopic(this,'과학·기술')">과학·기술</button>
+                    <button class="pr-chip disabled" onclick="pToggleTopic(this,'사회·문화')">사회·문화</button>
+                    <button class="pr-chip disabled" onclick="pToggleTopic(this,'스포츠·레저')">스포츠·레저</button>
+                    <button class="pr-chip disabled" onclick="pToggleTopic(this,'심리·철학')">심리·철학</button>
+                    <button class="pr-chip disabled" onclick="pToggleTopic(this,'예술·문학')">예술·문학</button>
+                    <button class="pr-chip disabled" onclick="pToggleTopic(this,'경제·경영')">경제·경영</button>
+                  </div>
+                  <div class="pr-random-notice" id="prRandomNotice">
+                    <span>🎲</span>
+                    <span>주제 미선택 시 전체 주제에서 랜덤 구성</span>
+                  </div>
+                </div>
+                <div class="pr-extra">
+                  <div class="pr-extra-title">추가 옵션</div>
+                  <div class="pr-extra-opt" onclick="this.querySelector('.pr-extra-chk').classList.toggle('checked')">
+                    <div class="pr-extra-chk"></div>
+                    <span class="pr-extra-label">중복 지문 제외</span>
+                  </div>
+                  <div class="pr-extra-opt" style="opacity:.5;pointer-events:none">
+                    <div class="pr-extra-chk"></div>
+                    <span class="pr-extra-label" style="color:#aaa">기존 출제 지문 제외 <span style="font-size:10px">(준비 중)</span></span>
+                  </div>
+                </div>
+              </div>
+              <div class="proto-bottom">
+                <div class="proto-summary">총 <strong id="pTotal">0</strong>지문 <span class="d">| 문항 <strong id="pTotalQ">0</strong>문제</span></div>
+                <button class="proto-next disabled" id="pNextBtn" disabled>다음 단계 →</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 뷰 -->
+      <div class="step-view" id="step2">
+        <div class="empty-screen">
+          <div class="empty-screen-icon">🔧</div>
+          <div class="empty-screen-title">구성 예정</div>
+          <div class="empty-screen-sub">STEP 2 화면은 아직 준비 중이에요</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── 라이트: 미결/참고 ── -->
+  <div class="col-right">
+    <div class="right-tabs">
+      <div class="right-tab active" onclick="switchRightTab('issues', this)" id="tabIssue">미결 사항<span class="right-tab-badge" id="tabIssueBadge">0</span></div>
+      <div class="right-tab" onclick="switchRightTab('refs', this)" id="tabRef">참고 사항<span class="right-tab-badge" id="tabRefBadge">0</span></div>
+    </div>
+
+    <!-- 미결 사항 탭 -->
+    <div class="right-tab-content active" id="tab-issues">
+      <div class="rt-section">
+        <div class="rt-section-hd">
+          <div class="rt-section-title">미결 사항 <span id="issueCount" style="color:#bbb;font-weight:400"></span></div>
+          <button class="rt-add-btn" onclick="openModal('issue')">+ 등록</button>
+        </div>
+        <div class="rt-legend">
+          <div class="rt-legend-item"><div class="rt-legend-dot open"></div><span>미결</span></div>
+          <div class="rt-legend-item"><div class="rt-legend-dot done"></div><span>완료</span></div>
+        </div>
+        <div class="rt-list" id="issueList"></div>
+      </div>
+    </div>
+
+    <!-- 참고 사항 탭 -->
+    <div class="right-tab-content" id="tab-refs">
+      <div class="rt-section">
+        <div class="rt-section-hd">
+          <div class="rt-section-title">참고 사항 <span id="refCount" style="color:#bbb;font-weight:400"></span></div>
+          <button class="rt-add-btn" onclick="openModal('ref')">+ 등록</button>
+        </div>
+        <div class="rt-legend">
+          <div class="rt-legend-item"><div class="rt-legend-dot ref"></div><span>참고</span></div>
+        </div>
+        <div class="rt-list" id="refList"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 모달 -->
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="modalTitle">미결 사항 등록</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>제목</label>
+        <input type="text" id="modalTitleInput" placeholder="사항 제목을 입력하세요" maxlength="60">
+      </div>
+      <div class="modal-field">
+        <label>내용</label>
+        <textarea id="modalBodyInput" rows="4" placeholder="상세 내용을 입력하세요"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn cancel" onclick="closeModal()">취소</button>
+      <button class="modal-btn save" onclick="saveModal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ══════════════════════
+     내비게이션
+  ══════════════════════ */
+  function goStep(id) {
+    document.querySelectorAll('.step-view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.getElementById('nav-' + id).classList.add('active');
+  }
+
+  /* ══════════════════════
+     라이트 탭
+  ══════════════════════ */
+  function switchRightTab(tab, el) {
+    document.querySelectorAll('.right-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.right-tab-content').forEach(c => c.classList.remove('active'));
+    if(el) el.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  }
+
+  /* ══════════════════════
+     프로토타입 로직
+  ══════════════════════ */
+  const pTypes  = new Set();
+  const pTopics = new Set();
+  const pGrades = {
+    '중1':['550–700','90–140개'],'중2':['650–800','110–160개'],
+    '중3':['750–900','130–180개'],'고1':['850–950','150–200개'],
+    '고2':['900–1,000','150–200개'],'고3':['950–1,300','170–220개'],
+    '수능':['950–1,300','170–220개']
+  };
+
+  function pSelGrade(el, g) {
+    el.closest('.p-level-row').querySelectorAll('.p-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    const [l,w] = pGrades[g];
+    document.getElementById('pLexile').innerHTML = '렉사일 <strong style="color:#aaa">'+l+'</strong> · 단어 <strong style="color:#aaa">'+w+'</strong>';
+  }
+  function pToggleSec(hd) {
+    const list = hd.nextElementSibling; if(!list) return;
+    hd.classList.toggle('open');
+    list.style.display = hd.classList.contains('open') ? 'block' : 'none';
+  }
+  function pSecChk(e, chkEl, secId) {
+    e.stopPropagation();
+    const on = !chkEl.classList.contains('checked');
+    chkEl.classList.toggle('checked', on);
+    document.getElementById(secId).querySelectorAll('.p-item').forEach(row => {
+      const name = row.querySelector('.p-item-name').textContent;
+      const ic = row.querySelector('.p-item-chk');
+      if(on){ row.classList.add('selected'); ic.classList.add('checked'); pTypes.add(name); }
+      else  { row.classList.remove('selected'); ic.classList.remove('checked'); pTypes.delete(name); }
+    });
+    pRefresh();
+  }
+  function pToggleItem(row, name) {
+    const chk = row.querySelector('.p-item-chk');
+    const sel = !chk.classList.contains('checked');
+    chk.classList.toggle('checked', sel);
+    row.classList.toggle('selected', sel);
+    if(sel) pTypes.add(name); else pTypes.delete(name);
+    pRefresh();
+  }
+  function pToggleTopic(btn, name) {
+    if(btn.classList.contains('disabled')) return;
+    btn.classList.toggle('selected');
+    if(btn.classList.contains('selected')) pTopics.add(name); else pTopics.delete(name);
+    pRefresh();
+  }
+  function pRefresh() {
+    const hasType = pTypes.size > 0;
+    const prCount       = document.getElementById('prCount');
+    const prHint        = document.getElementById('prHint');
+    const pShortage     = document.getElementById('pShortage');
+    const prRandomNotice = document.getElementById('prRandomNotice');
+    const pTotal        = document.getElementById('pTotal');
+    const pTotalQ       = document.getElementById('pTotalQ');
+    const pNextBtn      = document.getElementById('pNextBtn');
+    if(!prCount || !prHint || !pShortage || !prRandomNotice || !pTotal || !pTotalQ || !pNextBtn) return;
+    prCount.disabled = !hasType;
+    document.querySelectorAll('.pr-chip').forEach(c => c.classList.toggle('disabled', !hasType));
+    prHint.textContent = hasType ? '유형 ' + pTypes.size + '개 선택됨' : '유형을 먼저 선택해주세요';
+    const n = hasType ? parseInt(prCount.value) : 0;
+    const total = hasType ? pTypes.size * n : 0;
+    pShortage.classList.toggle('show', hasType && pTopics.size >= 2);
+    prRandomNotice.style.display = pTopics.size === 0 ? 'flex' : 'none';
+    pTotal.textContent  = total;
+    pTotalQ.textContent = total;
+    const enabled = hasType && total > 0;
+    pNextBtn.className = 'proto-next ' + (enabled ? 'enabled' : 'disabled');
+    pNextBtn.disabled  = !enabled;
+  }
+
+  /* ══════════════════════
+     Firebase Realtime DB 연동
+  ══════════════════════ */
+  const FB_URL = 'https://workspace-reading-default-rtdb.asia-southeast1.firebasedatabase.app/workspace.json';
+  const SEED_VERSION = 'v2';
+
+  let issueData = [];
+  let refData   = [];
+  let modalMode = 'issue';
+  let editId    = null;
+  let isSaving  = false;
+
+  /* ── 저장 ── */
+  async function persist() {
+    if (isSaving) return;
+    isSaving = true;
+    try {
+      const res = await fetch(FB_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seedVersion: SEED_VERSION, issues: issueData, refs: refData })
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+    } catch(e) {
+      console.warn('Firebase 저장 실패:', e);
+    } finally {
+      isSaving = false;
+    }
+  }
+
+  function setLoadingState(on) {
+    ['issueList','refList'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = on
+        ? '<div class="rt-empty" style="color:#ccc">불러오는 중…</div>'
+        : '';
+    });
+  }
+
+  /* ── 모달 ── */
+  function openModal(mode, id) {
+    modalMode = mode;
+    editId    = id ?? null;
+    const arr  = mode === 'issue' ? issueData : refData;
+    const item = editId ? arr.find(x => x.id === editId) : null;
+    document.getElementById('modalTitle').textContent =
+      (mode === 'issue' ? '미결 사항' : '참고 사항') + (editId ? ' 수정' : ' 등록');
+    document.getElementById('modalTitleInput').value = item?.title ?? '';
+    document.getElementById('modalBodyInput').value  = item?.body  ?? '';
+    document.getElementById('modalOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('modalTitleInput').focus(), 50);
+  }
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+  async function saveModal() {
+    const title = document.getElementById('modalTitleInput').value.trim();
+    const body  = document.getElementById('modalBodyInput').value.trim();
+    if (!title) { document.getElementById('modalTitleInput').focus(); return; }
+    const arr = modalMode === 'issue' ? issueData : refData;
+    if (editId !== null) {
+      const item = arr.find(x => x.id === editId);
+      if (item) { item.title = title; item.body = body; }
+    } else {
+      arr.push({ id: Date.now(), title, body, status: modalMode === 'issue' ? 'open' : 'ref' });
+    }
+    closeModal();
+    await persist();
+    renderLists();
+  }
+
+  async function deleteItem(mode, id) {
+    if (mode === 'issue') issueData = issueData.filter(x => x.id !== id);
+    else                  refData   = refData.filter(x => x.id !== id);
+    await persist();
+    renderLists();
+  }
+  async function toggleStatus(id) {
+    const item = issueData.find(x => x.id === id);
+    if (item) item.status = item.status === 'open' ? 'done' : 'open';
+    await persist();
+    renderLists();
+  }
+  function toggleExpand(el) { el.classList.toggle('expanded'); }
+
+  /* ── 렌더 ── */
+  function renderLists() {
+    renderList('issue');
+    renderList('ref');
+  }
+  function renderList(mode) {
+    const arr     = mode === 'issue' ? issueData : refData;
+    const list    = document.getElementById(mode === 'issue' ? 'issueList' : 'refList');
+    const countEl = document.getElementById(mode === 'issue' ? 'issueCount' : 'refCount');
+    const emptyMsg = mode === 'issue'
+      ? '등록된 미결 사항이 없어요.<br>논의 중인 사항을 기록해보세요.'
+      : '등록된 참고 사항이 없어요.<br>배경 정보나 맥락을 기록해보세요.';
+    countEl.textContent = arr.length ? '(' + arr.length + ')' : '';
+
+    // 탭 배지 업데이트
+    const badgeEl = document.getElementById(mode === 'issue' ? 'tabIssueBadge' : 'tabRefBadge');
+    if (badgeEl) badgeEl.textContent = arr.length;
+    if (!arr.length) {
+      list.innerHTML = '<div class="rt-empty">' + emptyMsg + '</div>';
+      return;
+    }
+    list.innerHTML = arr.map((item, idx) => {
+      const isDone   = item.status === 'done';
+      const dotCls   = isDone ? 'done' : (mode === 'issue' ? 'open' : 'ref');
+      const statusBtn = mode === 'issue'
+        ? `<button class="rt-status-toggle ${isDone ? 'done' : 'open'}" onclick="toggleStatus(${item.id})">${isDone ? '✓ 완료' : '● 미결'}</button>`
+        : '';
+      return `
+        <div class="rt-item">
+          <div class="rt-item-row" onclick="toggleExpand(this.parentElement)">
+            <div class="rt-item-num">${idx + 1}</div>
+            <div class="rt-status-dot ${dotCls}"></div>
+            <div class="rt-item-title ${isDone ? 'done-txt' : ''}">${escHtml(item.title)}</div>
+            <div class="rt-chevron">▼</div>
+          </div>
+          <div class="rt-item-body">
+            <div class="rt-item-body-text">${item.body ? escHtml(item.body) : '<span style="color:#ccc">내용 없음</span>'}</div>
+            <div class="rt-item-actions">
+              <button class="rt-action-btn" onclick="openModal('${mode}', ${item.id})">수정</button>
+              <button class="rt-action-btn danger" onclick="deleteItem('${mode}', ${item.id})">삭제</button>
+              ${statusBtn}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+  }
+
+  /* ── 초기 데이터 ── */
+  const SEED = {
+    issues: [
+      { id: 1, title: '유형 분류 뎁스',        body: '2뎁스 구조(대분류 > 소분류) 괜찮은지 검토 필요.', status: 'open' },
+      { id: 2, title: '유형 분류 명칭',         body: '현재 프로토타입 명칭은 임시. 콘팀과 논의하여 확정 필요.', status: 'open' },
+      { id: 3, title: '주제 분류 뎁스',         body: '2뎁스 구조 괜찮은지 검토 필요.', status: 'open' },
+      { id: 4, title: '주제 분류 명칭',         body: '현재 프로토타입 명칭은 임시. 콘팀과 논의하여 확정 필요.', status: 'open' },
+      { id: 5, title: '문제 타입',              body: '객관식 외에 어떤 문제 유형이 필요한지 정의 필요.', status: 'open' },
+      { id: 6, title: 'DB 구조',                body: 'set = 지문 + 문항(들). 하나의 지문이 여러 set가 될 수 있는 구조 확정 필요.', status: 'open' },
+      { id: 7, title: '유형 + 주제 결합 구조',  body: '결합하여 만들 수 있는 구조인데, 유형을 먼저 선택하는 현재 흐름이 적절한지 검토 필요.', status: 'open' },
+    ],
+    refs: [
+      { id: 101, title: '유형→주제 순서로 확정',               body: '유형이 Primary / 주제가 Secondary(선택). 주제 미선택 시 랜덤 구성.', status: 'ref' },
+      { id: 102, title: '주제 필터 배치 — 우측 패널 태그 칩',  body: '대분류 한정 칩 방식으로 확정. 선택 안 하면 랜덤, 유형 선택 전까지 비활성.', status: 'ref' },
+      { id: 103, title: '지문 개수 설정 방식',                 body: '"선택한 유형별로 N개씩" 한 줄 + 드롭다운으로 확정. 유형별 개별 설정 방식 제거.', status: 'ref' },
+      { id: 104, title: '아티팩트 공유 딜레이',                body: 'claude.ai/artifacts/ 링크 반영까지 수정 후 1~2분 소요. 동료 공유 시 안내 필요.', status: 'ref' },
+    ]
+  };
+
+  /* ── 초기 로드 ── */
+  async function init() {
+    setLoadingState(true);
+    try {
+      const res = await fetch(FB_URL);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      if (data && data.issues) {
+        issueData = data.issues || [];
+        refData   = data.refs   || [];
+      } else {
+        throw new Error('no data');
+      }
+    } catch(e) {
+      // 첫 실행 or 데이터 없음 → SEED로 초기화 후 저장
+      issueData = JSON.parse(JSON.stringify(SEED.issues));
+      refData   = JSON.parse(JSON.stringify(SEED.refs));
+      await persist();
+    }
+    setLoadingState(false);
+    renderLists();
+  }
+
+  init();
+</script>
+</body>
+</html>
