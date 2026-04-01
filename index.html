@@ -490,7 +490,7 @@
   .p-item-list { }
   .p-item {
     display: flex; align-items: center; gap: 8px;
-    padding: 8px 16px 8px 38px;
+    padding: 9px 16px;
     border-bottom: 1px solid #f2f2f2;
     cursor: pointer; transition: background .1s;
   }
@@ -504,6 +504,7 @@
   .p-item-chk.checked { background: #5b5ef4; border-color: #5b5ef4; }
   .p-item-chk.checked::after { content: ''; width: 8px; height: 4px; border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(-45deg) translateY(-1px); display: block; }
   .p-item-name { font-size: 12px; color: #333; }
+  .p-item-sub { margin-left: auto; font-size: 11px; color: #bbb; flex-shrink: 0; }
 
   /* 프로토 우측 */
   .proto-right {
@@ -644,38 +645,22 @@
               </div>
               <div class="p-lexile" id="pLexile">렉사일 <strong style="color:#aaa">750–900</strong> · 단어 <strong style="color:#aaa">130–180개</strong></div>
               <div class="p-content">
-                <div class="p-sec-hd open" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps1')"></div><span class="p-sec-label">대의파악</span></div>
-                <div id="ps1" class="p-item-list">
-                  <div class="p-item" onclick="pToggleItem(this,'주제 파악')"><div class="p-item-chk"></div><span class="p-item-name">주제 파악</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'요지 파악')"><div class="p-item-chk"></div><span class="p-item-name">요지 파악</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'제목 추론')"><div class="p-item-chk"></div><span class="p-item-name">제목 추론</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'목적 파악')"><div class="p-item-chk"></div><span class="p-item-name">목적 파악</span></div>
-                </div>
-                <div class="p-sec-hd" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps2')"></div><span class="p-sec-label">세부사항 파악</span></div>
-                <div id="ps2" class="p-item-list" style="display:none">
-                  <div class="p-item" onclick="pToggleItem(this,'내용 일치·불일치')"><div class="p-item-chk"></div><span class="p-item-name">내용 일치·불일치</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'안내문 이해')"><div class="p-item-chk"></div><span class="p-item-name">안내문 이해</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'도표 이해')"><div class="p-item-chk"></div><span class="p-item-name">도표 이해</span></div>
-                </div>
-                <div class="p-sec-hd" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps3')"></div><span class="p-sec-label">심경·태도·분위기</span></div>
-                <div id="ps3" class="p-item-list" style="display:none">
-                  <div class="p-item" onclick="pToggleItem(this,'심경 변화')"><div class="p-item-chk"></div><span class="p-item-name">심경 변화</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'필자 심경·태도')"><div class="p-item-chk"></div><span class="p-item-name">필자 심경·태도</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'분위기 파악')"><div class="p-item-chk"></div><span class="p-item-name">분위기 파악</span></div>
-                </div>
-                <div class="p-sec-hd" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps4')"></div><span class="p-sec-label">어휘·어법</span></div>
-                <div id="ps4" class="p-item-list" style="display:none">
-                  <div class="p-item" onclick="pToggleItem(this,'어휘 선택')"><div class="p-item-chk"></div><span class="p-item-name">어휘 선택</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'어법 선택')"><div class="p-item-chk"></div><span class="p-item-name">어법 선택</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'빈칸 추론')"><div class="p-item-chk"></div><span class="p-item-name">빈칸 추론</span></div>
-                </div>
-                <div class="p-sec-hd" onclick="pToggleSec(this)"><span class="arr">▶</span><div class="p-sec-chk" onclick="pSecChk(event,this,'ps5')"></div><span class="p-sec-label">글의 구조·흐름</span></div>
-                <div id="ps5" class="p-item-list" style="display:none">
-                  <div class="p-item" onclick="pToggleItem(this,'문단 순서')"><div class="p-item-chk"></div><span class="p-item-name">문단 순서</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'문장 삽입')"><div class="p-item-chk"></div><span class="p-item-name">문장 삽입</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'요약 완성')"><div class="p-item-chk"></div><span class="p-item-name">요약 완성</span></div>
-                  <div class="p-item" onclick="pToggleItem(this,'장문형')"><div class="p-item-chk"></div><span class="p-item-name">장문형</span></div>
-                </div>
+                  <div class="p-item" onclick="pToggleItem(this,'목적 파악')"><div class="p-item-chk"></div><span class="p-item-name">목적 파악</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'주제 찾기')"><div class="p-item-chk"></div><span class="p-item-name">주제 찾기</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'요지, 주장')"><div class="p-item-chk"></div><span class="p-item-name">요지, 주장</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'심경, 분위기')"><div class="p-item-chk"></div><span class="p-item-name">심경, 분위기</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'내용 일치')"><div class="p-item-chk"></div><span class="p-item-name">내용 일치</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'도표')"><div class="p-item-chk"></div><span class="p-item-name">도표</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'지칭 추론')"><div class="p-item-chk"></div><span class="p-item-name">지칭 추론</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'빈칸 추론')"><div class="p-item-chk"></div><span class="p-item-name">빈칸 추론</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'함축 의미 추론')"><div class="p-item-chk"></div><span class="p-item-name">함축 의미 추론</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'흐름과 무관한 문장')"><div class="p-item-chk"></div><span class="p-item-name">흐름과 무관한 문장</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'이어질 글의 순서')"><div class="p-item-chk"></div><span class="p-item-name">이어질 글의 순서</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'주어진 문장의 위치')"><div class="p-item-chk"></div><span class="p-item-name">주어진 문장의 위치</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'요약문 완성')"><div class="p-item-chk"></div><span class="p-item-name">요약문 완성</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'장문형')"><div class="p-item-chk"></div><span class="p-item-name">장문형</span><span class="p-item-sub">지문당 최대 3문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'어법')"><div class="p-item-chk"></div><span class="p-item-name">어법</span><span class="p-item-sub">지문당 1문제</span></div>
+                  <div class="p-item" onclick="pToggleItem(this,'어휘')"><div class="p-item-chk"></div><span class="p-item-name">어휘</span><span class="p-item-sub">지문당 1문제</span></div>
               </div>
             </div>
 
@@ -903,10 +888,13 @@
     prHint.textContent = hasType ? '유형 ' + pTypes.size + '개 선택됨' : '유형을 먼저 선택해주세요';
     const n = hasType ? parseInt(prCount.value) : 0;
     const total = hasType ? pTypes.size * n : 0;
+    const hasLong = pTypes.has('장문형');
+    const normalCount = hasLong ? (pTypes.size - 1) : pTypes.size;
+    const totalQ = hasType ? (normalCount * n + (hasLong ? n * 3 : 0)) : 0;
     pShortage.classList.toggle('show', hasType && pTopics.size >= 2);
     prRandomNotice.style.display = pTopics.size === 0 ? 'flex' : 'none';
     pTotal.textContent  = total;
-    pTotalQ.textContent = total;
+    pTotalQ.textContent = totalQ;
     const enabled = hasType && total > 0;
     pNextBtn.className = 'proto-next ' + (enabled ? 'enabled' : 'disabled');
     pNextBtn.disabled  = !enabled;
