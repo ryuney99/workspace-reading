@@ -55,7 +55,7 @@ export function buildDrillPrompt(
     drillRules.push('- For 어법어휘: the "sentence" field MUST contain a [A / B] bracket with exactly two choices separated by " / ". NEVER use _____ blanks for this drill type. Example: "She [runs / run] every morning." The bracket replaces one grammatically interesting word (verb agreement, tense, adjective vs adverb, etc.).')
   }
   if (drillTypes.includes('빈칸채우기')) {
-    drillRules.push(`- For 빈칸채우기: remove exactly ${blankCount} key content word(s) (nouns, verbs, or adjectives — NOT articles or prepositions). Replace each with _____. The "answers" array must have exactly ${blankCount} element(s) in order.`)
+    drillRules.push(`- For 빈칸채우기: you MUST replace EXACTLY ${blankCount} word(s) with _____ — no more, no fewer. Choose only key content words (nouns, verbs, adjectives). Do NOT blank out articles, prepositions, or conjunctions. Count the _____ occurrences in your sentence before finalizing: it MUST equal ${blankCount}. The "answers" array MUST contain exactly ${blankCount} element(s) in the order they appear.`)
   }
   if (drillTypes.includes('순서배열')) {
     drillRules.push('- For 순서배열: shuffle the word tokens so they are NOT in original order.')
