@@ -9,9 +9,9 @@ export function buildDrillPrompt(
 
   if (drillTypes.includes('어법어휘')) {
     drillSchemaLines.push(`      "어법어휘": {
-        "sentence": "<sentence with one bracketed choice, e.g. He [run / runs] fast.>",
-        "answer": "<correct option>",
-        "distractor": "<wrong option>"
+        "sentence": "<full sentence where ONE word is replaced with [correctWord / wrongWord] bracket, e.g. 'She [runs / run] every day.' or 'He is [interested / interesting] in music.'>",
+        "answer": "<the grammatically correct word inside the bracket>",
+        "distractor": "<the grammatically wrong word inside the bracket>"
       }`)
   }
 
@@ -52,7 +52,7 @@ export function buildDrillPrompt(
   ]
 
   if (drillTypes.includes('어법어휘')) {
-    drillRules.push('- For 어법어휘: pick a grammatically interesting word (verb form, adjective, preposition). Create one plausible wrong option.')
+    drillRules.push('- For 어법어휘: the "sentence" field MUST contain a [A / B] bracket with exactly two choices separated by " / ". NEVER use _____ blanks for this drill type. Example: "She [runs / run] every morning." The bracket replaces one grammatically interesting word (verb agreement, tense, adjective vs adverb, etc.).')
   }
   if (drillTypes.includes('빈칸채우기')) {
     drillRules.push(`- For 빈칸채우기: remove exactly ${blankCount} key content word(s) (nouns, verbs, or adjectives — NOT articles or prepositions). Replace each with _____. The "answers" array must have exactly ${blankCount} element(s) in order.`)
