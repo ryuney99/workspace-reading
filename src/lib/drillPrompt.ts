@@ -46,7 +46,8 @@ export function buildDrillPrompt(
     : ''
 
   const drillRules: string[] = [
-    '- Extract ALL complete English sentences from the input text.',
+    '- You MUST include EVERY sentence from the input text in the "sentences" array. Do NOT stop early, do NOT truncate, do NOT skip any sentence.',
+    '- Extract ALL complete English sentences from the input text, in the order they appear.',
     '- For 본문확인: always fill "original" and "korean" fields for every sentence.',
   ]
 
