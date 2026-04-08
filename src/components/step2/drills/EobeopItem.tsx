@@ -7,8 +7,8 @@ interface Props {
 }
 
 /**
- * [A / B] 괄호를 파싱해서 선택지 뱃지로 렌더링
- * e.g. "She [runs / run] every day." →  She ① runs ② run every day.
+ * [A / B] 괄호를 파싱해서 동일한 스타일의 선택지로 렌더링
+ * e.g. "She [runs / run] every day." → She [ runs / run ] every day.
  */
 function renderWithChoices(sentence: string) {
   const parts = sentence.split(/(\[[^\]]+\])/g)
@@ -18,14 +18,11 @@ function renderWithChoices(sentence: string) {
     if (match) {
       const [, a, b] = match
       return (
-        <span key={i} className="inline-flex items-center gap-1 mx-0.5 align-middle">
-          <span className="inline-flex items-center gap-0.5 bg-[#F0F0FF] border border-indigo-200 rounded px-1.5 py-0.5 text-[12.5px] font-semibold text-primary whitespace-nowrap">
-            <span className="text-[10px] text-indigo-300 mr-0.5">①</span>{a.trim()}
-          </span>
-          <span className="text-gray-300 text-[11px]">/</span>
-          <span className="inline-flex items-center gap-0.5 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5 text-[12.5px] font-semibold text-gray-600 whitespace-nowrap">
-            <span className="text-[10px] text-gray-300 mr-0.5">②</span>{b.trim()}
-          </span>
+        <span
+          key={i}
+          className="inline-block mx-0.5 border border-gray-400 rounded px-2 py-0.5 text-[12.5px] font-medium text-gray-800 whitespace-nowrap align-middle"
+        >
+          {a.trim()} / {b.trim()}
         </span>
       )
     }
