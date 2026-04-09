@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>문장 드릴 학습지 만들기</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #5C5CFF;
+      --primary-light: #F0F0FF;
+      --bg: #F4F4F6;
+      --border: #E5E7EB;
+      --text: #111827;
+      --text-sub: #6B7280;
+      --text-muted: #9CA3AF;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── GNB ── */
+    .gnb {
+      height: 56px;
+      background: #fff;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+    .gnb-left { font-size: 13px; color: var(--text-sub); font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    .gnb-step { font-size: 13px; font-weight: 700; color: var(--text); }
+    .gnb-right button {
+      font-size: 13px; color: var(--text-sub); background: none; border: none;
+      cursor: pointer; padding: 6px 12px; border-radius: 6px;
+    }
+    .gnb-right button:hover { background: #F3F4F6; color: var(--text); }
+
+    /* ── views ── */
+    .view { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+    .view.active { display: flex; }
+
+    /* ── Step 1 ── */
+    .step1-body { flex: 1; display: flex; gap: 16px; padding: 16px; overflow: hidden; }
+
+    .panel {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .panel-header h2 { font-size: 13px; font-weight: 600; }
+    .panel-header p { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* text panel */
+    .text-panel { flex: 1; }
+    .tabs { display: flex; gap: 24px; padding: 14px 20px 0; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .tab { padding-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+    textarea {
+      flex: 1;
+      width: 100%;
+      resize: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 13px;
+      color: var(--text);
+      font-family: inherit;
+      line-height: 1.7;
+      outline: none;
+      transition: border-color .15s;
+    }
+    textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(92,92,255,.1); }
+
+    .textarea-wrap { flex: 1; display: flex; flex-direction: column; padding: 16px 20px; gap: 10px; overflow: hidden; }
+    .sentence-hint { font-size: 12px; color: var(--text-sub); display: flex; align-items: center; gap: 6px; }
+    .sentence-hint strong { color: var(--primary); }
+    .sentence-hint.warn strong { color: #EF4444; }
+    .error-msg { font-size: 11px; color: #EF4444; font-weight: 500; }
+
+    /* drill selector panel */
+    .drill-panel { width: 300px; flex-shrink: 0; }
+    .drill-list { flex: 1; overflow-y: auto; padding: 8px 12px 12px; display: flex; flex-direction: column; gap: 2px; }
+    .drill-footer { padding: 10px 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+
+    .select-all-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; border-radius: 8px; cursor: pointer;
+      transition: background .1s;
+    }
+    .select-all-row:hover { background: #F9FAFB; }
+    .select-all-row.checked { background: var(--primary-light); }
+    .select-all-label { font-size: 13px; font-weight: 600; }
+    .select-all-label.checked { color: var(--primary); }
+    .select-all-count { margin-left: auto; font-size: 11px; color: var(--text-muted); }
+    .divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+
+    .drill-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 12px; border-radius: 8px; cursor: pointer;
+      transition: background .1s;
+    }
+    .drill-row:hover { background: #F9FAFB; }
+    .drill-row.checked { background: var(--primary-light); }
+    .drill-row-text { flex: 1; }
+    .drill-row-name { font-size: 13px; font-weight: 500; }
+    .drill-row-name.checked { color: var(--primary); }
+    .drill-row-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* checkbox */
+    .cb {
+      width: 16px; height: 16px; border-radius: 4px;
+      border: 2px solid #D1D5DB; background: #fff;
+      flex-shrink: 0; margin-top: 1px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+    }
+    .cb.checked { background: var(--primary); border-color: var(--primary); }
+    .cb.partial { background: #fff; border-color: #D1D5DB; }
+    .cb svg { display: none; }
+    .cb.checked svg { display: block; }
+
+    /* blank count sub-option */
+    .blank-count-box {
+      margin-left: 26px; padding: 8px 12px; background: var(--primary-light);
+      border: 1px solid #C7C7FF; border-radius: 8px; margin-bottom: 4px;
+    }
+    .blank-count-box p { font-size: 11px; font-weight: 600; color: var(--text-sub); margin-bottom: 6px; }
+    .blank-count-btns { display: flex; gap: 6px; }
+    .blank-btn {
+      width: 32px; height: 32px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      border: 1px solid var(--border); background: #fff; color: var(--text-sub);
+      cursor: pointer; transition: all .15s;
+    }
+    .blank-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* bottom bar */
+    .bottom-bar {
+      height: 56px; background: #fff; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; flex-shrink: 0;
+    }
+    .bottom-info { font-size: 13px; color: var(--text-sub); display: flex; align-items: center; gap: 10px; }
+    .bottom-info strong { color: var(--text); }
+    .bottom-info strong.warn { color: #EF4444; }
+
+    .btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; transition: all .15s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #4848E8; box-shadow: 0 2px 8px rgba(92,92,255,.3); }
+    .btn-primary:disabled { background: #E5E7EB; color: #9CA3AF; cursor: not-allowed; box-shadow: none; }
+    .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+    .btn-outline:hover { background: var(--primary-light); }
+
+    /* spinner */
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,.3);
+      border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Step 2 ── */
+    .step2-body { flex: 1; display: flex; overflow: hidden; }
+    .a4-wrap { flex: 1; overflow-y: auto; background: var(--bg); }
+    .side-panel { width: 320px; background: #fff; border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; }
+    .side-header { padding: 16px 20px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; flex-shrink: 0; }
+    .side-body { flex: 1; overflow-y: auto; padding: 12px; }
+    .side-sentence { padding: 8px 10px; border-radius: 6px; margin-bottom: 4px; font-size: 12px; line-height: 1.6; color: var(--text-sub); background: #F9FAFB; border: 1px solid var(--border); }
+    .side-sentence-num { font-weight: 700; color: var(--primary); margin-right: 4px; }
+
+    /* ── A4 ── */
+    .a4-paper {
+      width: 794px; min-height: 1123px; background: #fff;
+      margin: 32px auto; padding: 48px 56px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.1);
+    }
+    .a4-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .a4-title-input {
+      font-size: 13px; font-weight: 600; color: #374151;
+      background: transparent; border: none; border-bottom: 1px dashed #D1D5DB;
+      outline: none; width: 200px; padding: 2px 4px;
+    }
+    .a4-title-input:focus { border-bottom-color: var(--primary); }
+    .a4-meta-right { font-size: 11px; color: var(--text-muted); display: flex; gap: 16px; }
+    .a4-meta-right span { display: flex; gap: 4px; align-items: center; }
+    .a4-divider { height: 2px; background: var(--primary); margin-bottom: 24px; }
+
+    /* drill section */
+    .drill-section { margin-bottom: 40px; }
+    .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .section-badge { background: var(--primary); color: #fff; font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 4px; letter-spacing: .05em; }
+    .section-label { font-size: 13px; font-weight: 700; color: #1F2937; letter-spacing: .03em; }
+    .section-instruction { font-size: 12px; font-weight: 600; color: #4B5563; margin-bottom: 18px; line-height: 1.6; }
+    .drill-items { display: flex; flex-direction: column; gap: 18px; }
+
+    /* item */
+    .drill-item { display: flex; align-items: flex-start; gap: 8px; }
+    .item-num { font-size: 13px; font-weight: 700; color: #374151; flex-shrink: 0; width: 24px; }
+    .item-body { flex: 1; }
+    .item-en { font-size: 13px; color: #1F2937; line-height: 1.7; }
+    .item-ko { font-size: 11.5px; color: #9CA3AF; margin-top: 2px; line-height: 1.6; }
+    .item-arrow { font-size: 12px; color: #9CA3AF; margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+    .answer-line { flex: 1; border-bottom: 1px solid #9CA3AF; height: 20px; }
+    .answer-lines { margin-top: 6px; display: flex; flex-direction: column; gap: 6px; }
+    .answer-line-row { display: flex; align-items: center; gap: 6px; }
+    .answer-line-idx { font-size: 10px; color: #9CA3AF; width: 16px; flex-shrink: 0; }
+
+    /* 어법어휘 choice bracket */
+    .choice-bracket {
+      display: inline-block; vertical-align: middle;
+      border: 1px solid #6B7280; border-radius: 4px;
+      padding: 1px 8px; margin: 0 2px;
+      font-size: 12px; font-weight: 500; color: #1F2937;
+      white-space: nowrap;
+    }
+
+    /* 순서배열 chips */
+    .word-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .word-chip {
+      background: #F3F4F6; border: 1px solid var(--border);
+      border-radius: 4px; padding: 3px 8px;
+      font-size: 12px; color: #374151;
+    }
+
+    /* toast */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px);
+      background: #1F2937; color: #fff; font-size: 13px; padding: 10px 20px;
+      border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.2);
+      opacity: 0; transition: all .25s; pointer-events: none; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* print */
+    @media print {
+      body { background: #fff; overflow: visible; height: auto; }
+      .gnb, .bottom-bar, .side-panel { display: none !important; }
+      .view.active { display: block !important; overflow: visible; }
+      .step2-body { display: block !important; }
+      .a4-wrap { overflow: visible; background: #fff; }
+      .a4-paper { margin: 0; box-shadow: none; padding: 20px 28px; width: 100%; min-height: auto; }
+      .a4-title-input { border-bottom-color: transparent; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- GNB -->
+<nav class="gnb" id="gnb">
+  <div class="gnb-left">
+    <span>문장 드릴 학습지 만들기</span>
+    <span style="color:#D1D5DB">|</span>
+    <span class="gnb-step" id="gnb-step">STEP 1</span>
+  </div>
+  <div class="gnb-right">
+    <button onclick="goToStep1()">← 처음으로</button>
+  </div>
+</nav>
+
+<!-- Step 1 -->
+<div class="view" id="view-step1">
+  <div class="step1-body">
+    <!-- 텍스트 입력 -->
+    <div class="panel text-panel">
+      <div class="tabs">
+        <div class="tab">텍스트 입력</div>
+      </div>
+      <div class="textarea-wrap">
+        <textarea
+          id="input-text"
+          placeholder="영어 지문을 붙여 넣거나, 직접 입력해주세요. 문장 단위 드릴 학습지가 자동 생성됩니다."
+          oninput="onTextChange()"
+        ></textarea>
+        <div id="sentence-hint" class="sentence-hint" style="display:none">
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          <span id="sentence-hint-text"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 드릴 선택 -->
+    <div class="panel drill-panel">
+      <div class="panel-header">
+        <h2>드릴 종류 선택</h2>
+        <p>원하는 드릴을 1개 이상 선택하세요</p>
+      </div>
+      <div class="drill-list">
+        <!-- 전체 선택 -->
+        <div class="select-all-row" id="row-all" onclick="toggleAll()">
+          <div class="cb" id="cb-all">
+            <svg width="10" height="10" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="select-all-label" id="label-all">전체 선택</span>
+          <span class="select-all-count" id="count-all">0/5</span>
+        </div>
+        <hr class="divider" />
+
+        <!-- 드릴 항목들 -->
+        <div class="drill-row" id="row-bonmun" onclick="toggleDrill('bonmun')">
+          <div class="cb" id="cb-bonmun"><svg width="10" height="10" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="drill-row-text">
+            <div class="drill-row-name" id="name-bonmun">본문 확인</div>
+            <div class="drill-row-desc">영어 문장 + 한글 해석</div>
+          </div>
+        </div>
+
+        <div class="drill-row" id="row-eobeop" onclick="toggleDrill('eobeop')">
+          <div class="cb" id="cb-eobeop"><svg width="10" height="10" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="drill-row-text">
+            <div class="drill-row-name" id="name-eobeop">어법 / 어휘</div>
+            <div class="drill-row-desc">2지선다 선택형</div>
+          </div>
+        </div>
+
+        <div class="drill-row" id="row-blank" onclick="toggleDrill('blank')">
+          <div class="cb" id="cb-blank"><svg width="10" height="10" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="drill-row-text">
+            <div class="drill-row-name" id="name-blank">빈칸 채우기</div>
+            <div class="drill-row-desc">핵심 어휘 빈칸 처리</div>
+          </div>
+        </div>
+        <div id="blank-count-box" class="blank-count-box" style="display:none">
+          <p>빈칸 개수</p>
+          <div class="blank-count-btns">
+            <button class="blank-btn active" onclick="setBlankCount(1,event)">1</button>
+            <button class="blank-btn" onclick="setBlankCount(2,event)">2</button>
+            <button class="blank-btn" onclick="setBlankCount(3,event)">3</button>
+          </div>
+        </div>
+
+        <div class="drill-row" id="row-order" onclick="toggleDrill('order')">
+          <div class="cb" id="cb-order"><svg width="10" height="10" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="drill-row-text">
+            <div class="drill-row-name" id="name-order">순서 배열</div>
+            <div class="drill-row-desc">단어 순서 맞추기</div>
+          </div>
+        </div>
+
+        <div class="drill-row" id="row-yeongja" onclick="toggleDrill('yeongja')">
+          <div class="cb" id="cb-yeongja"><svg width="10" height="10" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="drill-row-text">
+            <div class="drill-row-name" id="name-yeongja">영작</div>
+            <div class="drill-row-desc">한글만 보고 영작</div>
+          </div>
+        </div>
+      </div>
+      <div class="drill-footer" id="drill-footer">선택된 드릴이 없습니다</div>
+    </div>
+  </div>
+
+  <!-- bottom bar -->
+  <div class="bottom-bar">
+    <div class="bottom-info">
+      총 <strong id="s-count">0개</strong> 문장
+      <span id="over-msg" class="error-msg" style="display:none">최대 50문장까지 가능합니다</span>
+    </div>
+    <button class="btn btn-primary" id="btn-next" onclick="handleGenerate()" disabled>
+      <span id="btn-next-text">다음 단계</span>
+      <span id="btn-next-arrow">→</span>
+      <div class="spinner" id="btn-spinner" style="display:none"></div>
+    </button>
+  </div>
+</div>
+
+<!-- Step 2 -->
+<div class="view" id="view-step2">
+  <div class="step2-body">
+    <!-- A4 -->
+    <div class="a4-wrap">
+      <div class="a4-paper" id="a4-paper">
+        <div class="a4-meta">
+          <input class="a4-title-input" id="a4-title" type="text" value="문장 드릴 학습지" maxlength="25" />
+          <div class="a4-meta-right">
+            <span>이름: <span style="display:inline-block;border-bottom:1px solid #9CA3AF;width:80px">&nbsp;</span></span>
+            <span id="a4-date"></span>
+          </div>
+        </div>
+        <div class="a4-divider"></div>
+        <div id="a4-content"></div>
+      </div>
+    </div>
+
+    <!-- Side panel -->
+    <div class="side-panel" id="side-panel">
+      <div class="side-header">문장 목록</div>
+      <div class="side-body" id="side-body"></div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn btn-outline" onclick="goToStep1()">← 이전</button>
+    <button class="btn btn-outline" onclick="window.print()">🖨 인쇄</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── API 키 (여기에 실제 키 입력) ──
+  const GROQ_API_KEY = "여기에_실제_키_입력"
+
+  // ── State ──
+  const DRILLS_ORDER = ['bonmun','eobeop','blank','order','yeongja']
+  const DRILL_LABELS = {
+    bonmun: '본문 확인', eobeop: '어법 / 어휘', blank: '빈칸 채우기',
+    order: '순서 배열', yeongja: '영작'
+  }
+  const DRILL_API_KEYS = {
+    bonmun: '본문확인', eobeop: '어법어휘', blank: '빈칸채우기',
+    order: '순서배열', yeongja: '영작'
+  }
+  const SECTION_LABELS = {
+    bonmun: 'READING', eobeop: 'GRAMMAR', blank: 'FILL IN',
+    order: 'ORDER', yeongja: 'WRITING'
+  }
+  const INSTRUCTIONS = {
+    bonmun: '주어진 문장을 읽고, 한글 해석을 확인하세요.',
+    eobeop: '괄호 안에서 어법상 알맞은 것을 고르시오.',
+    blank: '빈칸에 들어갈 알맞은 말을 쓰시오.',
+    order: '주어진 단어를 올바르게 배열하여 문장을 완성하시오.',
+    yeongja: '우리말과 일치하도록 빈칸에 알맞은 말을 쓰시오.',
+  }
+
+  let selectedDrills = new Set()
+  let blankCount = 1
+  let generatedData = null
+
+  // ── Init ──
+  window.addEventListener('DOMContentLoaded', () => {
+    showStep1()
+    document.getElementById('a4-date').textContent = '날짜: ' + formatDate(new Date())
+  })
+
+  function formatDate(d) {
+    return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`
+  }
+
+  // ── Views ──
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'))
+    document.getElementById('view-'+name).classList.add('active')
+  }
+  function showStep1() { showView('step1'); document.getElementById('gnb-step').textContent = 'STEP 1' }
+  function goToStep1() { showView('step1'); document.getElementById('gnb-step').textContent = 'STEP 1' }
+
+  // ── Sentence count ──
+  function parseSentences(text) {
+    if (!text.trim()) return 0
+    return text.split(/[.!?]+/).map(s=>s.trim()).filter(s=>s.length>3).length
+  }
+
+  function onTextChange() {
+    const text = document.getElementById('input-text').value
+    const count = parseSentences(text)
+    const hint = document.getElementById('sentence-hint')
+    const hintText = document.getElementById('sentence-hint-text')
+    const sCount = document.getElementById('s-count')
+    const overMsg = document.getElementById('over-msg')
+
+    if (text.trim()) {
+      hint.style.display = 'flex'
+      hintText.innerHTML = `<strong>${count}개</strong> 문장 감지됨`
+    } else {
+      hint.style.display = 'none'
+    }
+
+    const over = count > 50
+    sCount.textContent = count + '개'
+    sCount.className = over ? 'warn' : ''
+    overMsg.style.display = over ? '' : 'none'
+    updateNextBtn()
+  }
+
+  // ── Drill selection ──
+  function toggleDrill(id) {
+    if (selectedDrills.has(id)) selectedDrills.delete(id)
+    else selectedDrills.add(id)
+    updateDrillUI()
+  }
+
+  function toggleAll() {
+    if (selectedDrills.size === DRILLS_ORDER.length) selectedDrills.clear()
+    else DRILLS_ORDER.forEach(d => selectedDrills.add(d))
+    updateDrillUI()
+  }
+
+  function setBlankCount(n, e) {
+    e.stopPropagation()
+    blankCount = n
+    document.querySelectorAll('.blank-btn').forEach((b,i) => {
+      b.classList.toggle('active', i+1 === n)
+    })
+  }
+
+  function updateDrillUI() {
+    const total = DRILLS_ORDER.length
+    const sel = selectedDrills.size
+
+    // checkboxes
+    DRILLS_ORDER.forEach(id => {
+      const checked = selectedDrills.has(id)
+      document.getElementById('cb-'+id).className = 'cb' + (checked ? ' checked' : '')
+      document.getElementById('row-'+id).className = 'drill-row' + (checked ? ' checked' : '')
+      document.getElementById('name-'+id).className = 'drill-row-name' + (checked ? ' checked' : '')
+    })
+
+    // blank count sub-option
+    document.getElementById('blank-count-box').style.display = selectedDrills.has('blank') ? '' : 'none'
+
+    // select all
+    const allCb = document.getElementById('cb-all')
+    const allRow = document.getElementById('row-all')
+    const allLabel = document.getElementById('label-all')
+    if (sel === total) {
+      allCb.className = 'cb checked'
+      allCb.querySelector('svg').style.display = 'block'
+      allRow.className = 'select-all-row checked'
+      allLabel.className = 'select-all-label checked'
+    } else {
+      allCb.className = 'cb' + (sel > 0 ? ' partial' : '')
+      allRow.className = 'select-all-row'
+      allLabel.className = 'select-all-label'
+    }
+    document.getElementById('count-all').textContent = `${sel}/${total}`
+    document.getElementById('drill-footer').textContent = sel > 0 ? `${sel}개 선택됨` : '선택된 드릴이 없습니다'
+
+    updateNextBtn()
+  }
+
+  function updateNextBtn() {
+    const text = document.getElementById('input-text').value.trim()
+    const count = parseSentences(text)
+    const ok = text.length > 0 && selectedDrills.size > 0 && count <= 50
+    document.getElementById('btn-next').disabled = !ok
+  }
+
+  // ── Generate ──
+  async function handleGenerate() {
+    const text = document.getElementById('input-text').value.trim()
+    if (!text || selectedDrills.size === 0) return
+
+    setLoading(true)
+    try {
+      const drillTypes = DRILLS_ORDER.filter(d => selectedDrills.has(d)).map(d => DRILL_API_KEYS[d])
+      const prompt = buildPrompt(text, drillTypes, blankCount)
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-8b-instant',
+          messages: [
+            { role: 'system', content: 'You are an English drill worksheet generator for Korean middle/high school students. Always respond with valid JSON only. No markdown fences, no commentary outside the JSON.' },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0,
+          max_tokens: 8192,
+          response_format: { type: 'json_object' },
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        if (res.status === 401) throw new Error('API 키가 올바르지 않습니다.')
+        if (res.status === 429) throw new Error('AI 서버 사용량 한도에 도달했습니다. 1분 후 다시 시도해 주세요.')
+        throw new Error(err.error?.message || '알 수 없는 오류가 발생했습니다.')
+      }
+
+      const json = await res.json()
+      generatedData = JSON.parse(json.choices[0].message.content)
+      renderStep2()
+    } catch (err) {
+      showToast(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function setLoading(on) {
+    document.getElementById('btn-next').disabled = on
+    document.getElementById('btn-next-text').style.display = on ? 'none' : ''
+    document.getElementById('btn-next-arrow').style.display = on ? 'none' : ''
+    document.getElementById('btn-spinner').style.display = on ? '' : 'none'
+    if (on) document.getElementById('btn-next-text').textContent = '드릴 생성 중...'
+  }
+
+  // ── Prompt builder ──
+  function buildPrompt(text, drillTypes, blankCount) {
+    const schemaLines = []
+    if (drillTypes.includes('어법어휘')) {
+      schemaLines.push(`      "어법어휘": {
+        "sentence": "<full sentence where ONE word is replaced with [correctWord / wrongWord] bracket, e.g. 'She [runs / run] every day.'>",
+        "answer": "<the grammatically correct word inside the bracket>",
+        "distractor": "<the grammatically wrong word inside the bracket>"
+      }`)
+    }
+    if (drillTypes.includes('빈칸채우기')) {
+      const ex = blankCount===1 ? '["<word>"]' : blankCount===2 ? '["<word1>","<word2>"]' : '["<word1>","<word2>","<word3>"]'
+      schemaLines.push(`      "빈칸채우기": {
+        "sentence": "<sentence with exactly ${blankCount} key content word(s) replaced by _____>",
+        "answers": ${ex}
+      }`)
+    }
+    if (drillTypes.includes('순서배열')) {
+      schemaLines.push(`      "순서배열": {
+        "words": ["<shuffled>","<word>","<tokens>"],
+        "answer": "<correctly ordered full sentence>"
+      }`)
+    }
+    if (drillTypes.includes('영작')) {
+      schemaLines.push(`      "영작": {
+        "korean": "<natural Korean translation for translation exercise>"
+      }`)
+    }
+
+    const schemaBlock = schemaLines.length > 0 ? ',\n' + schemaLines.join(',\n') : ''
+
+    const rules = [
+      '- You MUST include EVERY sentence from the input text. Do NOT stop early, do NOT skip any sentence.',
+      '- Extract ALL complete English sentences in the order they appear.',
+      '- For 본문확인: always fill "original" and "korean" for every sentence.',
+    ]
+    if (drillTypes.includes('어법어휘')) rules.push('- For 어법어휘: the "sentence" field MUST contain a [A / B] bracket with exactly two choices. NEVER use _____ blanks. Example: "She [runs / run] every morning."')
+    if (drillTypes.includes('빈칸채우기')) rules.push(`- For 빈칸채우기: replace EXACTLY ${blankCount} word(s) with _____. Count _____ in your sentence — it MUST equal ${blankCount}. The "answers" array must have exactly ${blankCount} element(s).`)
+    if (drillTypes.includes('순서배열')) rules.push('- For 순서배열: shuffle the word tokens so they are NOT in original order.')
+    if (drillTypes.includes('영작')) rules.push('- For 영작: provide a natural Korean translation.')
+    rules.push('- Respond ONLY with the JSON object. No markdown fences.')
+
+    return `INPUT TEXT:\n${text}\n\nREQUESTED DRILL TYPES: ${drillTypes.join(', ')}\n\nGenerate a JSON object:\n{\n  "sentences": [\n    {\n      "id": <number>,\n      "original": "<exact English sentence>",\n      "korean": "<natural Korean translation>"${schemaBlock}\n    }\n  ]\n}\n\nRULES:\n${rules.join('\n')}`
+  }
+
+  // ── Render Step 2 ──
+  function renderStep2() {
+    document.getElementById('gnb-step').textContent = 'STEP 2'
+    showView('step2')
+
+    const sentences = generatedData.sentences
+    const drillOrder = DRILLS_ORDER.filter(d => selectedDrills.has(d))
+
+    // Side panel
+    const sideBody = document.getElementById('side-body')
+    sideBody.innerHTML = sentences.map((s,i) =>
+      `<div class="side-sentence"><span class="side-sentence-num">${i+1}.</span>${s.original}</div>`
+    ).join('')
+
+    // A4 content
+    let html = ''
+    let itemStart = 1
+    drillOrder.forEach((drill, sIdx) => {
+      const apiKey = DRILL_API_KEYS[drill]
+      html += `<div class="drill-section">
+        <div class="section-header">
+          <div class="section-badge">${sIdx+1} ${SECTION_LABELS[drill]}</div>
+          <div class="section-label">${DRILL_LABELS[drill]}</div>
+        </div>
+        <div class="section-instruction">${INSTRUCTIONS[drill]}</div>
+        <div class="drill-items">`
+
+      sentences.forEach((s, i) => {
+        const num = itemStart + i
+        html += `<div class="drill-item"><div class="item-num">${num}.</div><div class="item-body">`
+        html += renderDrillItem(drill, s, apiKey)
+        html += `</div></div>`
+      })
+
+      html += `</div></div>`
+      itemStart += sentences.length
+    })
+
+    document.getElementById('a4-content').innerHTML = html
+  }
+
+  function renderDrillItem(drill, s, apiKey) {
+    switch (drill) {
+      case 'bonmun':
+        return `<p class="item-en">${esc(s.original)}</p>
+                <p class="item-ko">${esc(s.korean)}</p>`
+
+      case 'eobeop': {
+        const data = s['어법어휘']
+        if (!data) return `<p class="item-en">${esc(s.original)}</p>`
+        return `<p class="item-en">${renderChoices(data.sentence)}</p>`
+      }
+
+      case 'blank': {
+        const data = s['빈칸채우기']
+        if (!data) return `<p class="item-en">${esc(s.original)}</p>`
+        const answers = data.answers || []
+        const lines = answers.length <= 1
+          ? `<div class="answer-line-row"><span class="item-arrow" style="margin-top:0">→</span><div class="answer-line"></div></div>`
+          : answers.map((_,i) => `<div class="answer-line-row"><span class="answer-line-idx">(${i+1})</span><span style="font-size:12px;color:#9CA3AF">→</span><div class="answer-line"></div></div>`).join('')
+        return `<p class="item-en">${esc(data.sentence)}</p>
+                <p class="item-ko">${esc(s.korean)}</p>
+                <div class="answer-lines">${lines}</div>`
+      }
+
+      case 'order': {
+        const data = s['순서배열']
+        if (!data) return `<p class="item-en">${esc(s.original)}</p>`
+        const chips = (data.words || []).map(w => `<span class="word-chip">${esc(w)}</span>`).join('')
+        return `<div class="word-chips">${chips}</div>
+                <div class="answer-line-row" style="margin-top:8px;display:flex;align-items:center;gap:6px">
+                  <span style="font-size:12px;color:#9CA3AF">→</span>
+                  <div class="answer-line"></div>
+                </div>`
+      }
+
+      case 'yeongja': {
+        const data = s['영작']
+        const ko = data?.korean || s.korean
+        return `<p class="item-en" style="color:#4B5563">${esc(ko)}</p>
+                <div class="answer-line-row" style="margin-top:6px;display:flex;align-items:center;gap:6px">
+                  <span style="font-size:12px;color:#9CA3AF">→</span>
+                  <div class="answer-line"></div>
+                </div>`
+      }
+    }
+    return ''
+  }
+
+  function renderChoices(sentence) {
+    return sentence
+      .replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\[([^\]]+?)\/([^\]]+?)\]/g, (_,a,b) =>
+        `<span class="choice-bracket">${a.trim()} / ${b.trim()}</span>`)
+  }
+
+  function esc(str) {
+    return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  }
+
+  // ── Toast ──
+  let toastTimer
+  function showToast(msg) {
+    const t = document.getElementById('toast')
+    t.textContent = msg
+    t.classList.add('show')
+    clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3500)
+  }
+</script>
+</body>
+</html>
