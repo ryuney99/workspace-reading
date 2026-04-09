@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
         : (userMessage.content as Array<{ type: string; text: string }>)[0]?.text ?? ''
 
     const completion = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
+      model: 'llama-3.1-8b-instant',
       messages: [
         { role: 'system', content: SYSTEM_INSTRUCTION },
         { role: 'user', content: userText },
