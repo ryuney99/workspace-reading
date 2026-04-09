@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
         { role: 'user', content: userText },
       ],
       temperature: 0,
-      max_tokens: 32768,
+      max_tokens: 8192,
       response_format: { type: 'json_object' },
     })
 
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     }
     if (message.includes('429') || message.includes('rate_limit')) {
       return NextResponse.json(
-        { error: '요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.' },
+        { error: 'AI 서버 사용량 한도에 도달했습니다. 1분 후 다시 시도해 주세요.' },
         { status: 429 }
       )
     }
